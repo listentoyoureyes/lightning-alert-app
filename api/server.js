@@ -1,15 +1,14 @@
 const express = require('express');
+const serverless = require('serverless-http');
 const WebSocket = require('ws');
 const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
 
 const app = express();
-const port = 3001;
 
 let lightningData = [];
 const cities = require('./cities.json');
-let config = {};
 
 try {
   lightningData = JSON.parse(fs.readFileSync(path.join(__dirname, 'lightningData.json')));
@@ -17,14 +16,15 @@ try {
   console.error('Failed to load lightningData.json:', err);
 }
 
-try {
-  config = require('./config.json');
-} catch (err) {
-  console.error('Failed to load config.json:', err);
-  process.exit(1); // Exit if config.json cannot be loaded
-}
+const config = {
+  useMockServer: process.env.USE_MOCK_SERVER === 'true',
+  mockServerUrl: process.env.MOCK_SERVER_URL,
+  smhiServerUrl: process.env.SMHI_SERVER_URL,
+  username: process.env.WEBSOCKET_USERNAME,
+  password: process.env.WEBSOCKET_PASSWORD
+};
 
-// Determine which WebSocket URL to use based on configuration file
+// Determine which WebSocket URL to use based on configuration
 const WEBSOCKET_URL = config.useMockServer ? config.mockServerUrl : config.smhiServerUrl;
 const WEBSOCKET_USERNAME = config.username;
 const WEBSOCKET_PASSWORD = config.password;
@@ -33,7 +33,14 @@ const WEBSOCKET_PASSWORD = config.password;
 app.use(cors());
 
 // Serve the lightning data file to the frontend
-app.use('/lightning-data', express.static(path.join(__dirname, 'lightningData.json')));
+app.use('/.netlify/functions/server/lightning-data', express.static(path.join(__dirname, 'lightningData.json')));
+
+// Serve frontend files
+app.use(express.static(path.join(__dirname, '../public')));
+
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/index.html'));
+});
 
 // Create the WebSocket connection with basic authentication to the mock server or SMHI server
 const ws = new WebSocket(WEBSOCKET_URL, {
@@ -53,7 +60,7 @@ const haversine = (lat1, lon1, lat2, lon2) => {
 
   const R = 6371; // Radius of the Earth in km
   const dLat = toRad(lat2 - lat1);
-  const dLon = toRad(lon2 - lon1);
+  const dLon = toRad(lat2 - lon1);
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
@@ -113,7 +120,4 @@ ws.onmessage = (message) => {
   }
 };
 
-// Start the backend server
-app.listen(port, () => {
-  console.log(`Backend running at http://localhost:${port}`);
-});
+module.exports.handler = serverless(app);
