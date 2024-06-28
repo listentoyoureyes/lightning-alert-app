@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
   const lightningList = document.getElementById('lightning-list');
+  const logContainer = document.getElementById('log-container');
 
   const fetchData = () => {
     fetch('/api/lightning-data')
@@ -24,7 +25,27 @@ document.addEventListener('DOMContentLoaded', () => {
       });
   };
 
+  const fetchLogs = () => {
+    fetch('/api/logs')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.text();
+      })
+      .then(data => {
+        logContainer.textContent = data; // Display logs
+      })
+      .catch(error => {
+        console.error('Error fetching logs:', error);
+      });
+  };
+
   // Fetch data initially and then every 10 seconds
   fetchData();
   setInterval(fetchData, 10000);
+
+  // Fetch logs initially and then every 10 seconds
+  fetchLogs();
+  setInterval(fetchLogs, 10000);
 });

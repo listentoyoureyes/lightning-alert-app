@@ -9,11 +9,18 @@ const app = express();
 
 let lightningData = [];
 const cities = require('./cities.json');
+const logFilePath = path.join(__dirname, 'logs.txt');
+
+const logMessage = (message) => {
+  const logEntry = `${new Date().toISOString()} - ${message}\n`;
+  fs.appendFileSync(logFilePath, logEntry);
+  console.log(message);
+};
 
 try {
   lightningData = JSON.parse(fs.readFileSync(path.join(__dirname, 'lightningData.json')));
 } catch (err) {
-  console.error('Failed to load lightningData.json:', err);
+  logMessage('Failed to load lightningData.json: ' + err);
 }
 
 const config = {
@@ -31,7 +38,10 @@ const WEBSOCKET_PASSWORD = config.password;
 app.use(cors());
 
 // Serve the lightning data file to the frontend
-app.use('/lightning-data', express.static(path.join(__dirname, 'lightningData.json')));
+app.use('/.netlify/functions/server/lightning-data', express.static(path.join(__dirname, 'lightningData.json')));
+
+// Serve the log file to the frontend
+app.use('/.netlify/functions/server/logs', express.static(logFilePath));
 
 // Serve frontend files
 app.use(express.static(path.join(__dirname, '../public')));
@@ -68,13 +78,13 @@ const haversine = (lat1, lon1, lat2, lon2) => {
 
 // Function to handle heartbeat messages
 const handleHeartbeat = (message) => {
-  console.log('Heartbeat message received:', message);
+  logMessage('Heartbeat message received: ' + JSON.stringify(message));
 };
 
 // Handle WebSocket messages from the SMHI server
 ws.onmessage = (message) => {
   const strike = JSON.parse(message.data);
-  console.log('Received data:', strike);  // Log received data
+  logMessage('Received data: ' + JSON.stringify(strike));  // Log received data
 
   if (strike.countryCode === 'ZZ') {
     handleHeartbeat(strike);
@@ -86,7 +96,7 @@ ws.onmessage = (message) => {
 
   // Check if the lightning strike meets the threshold
   if (peakCurrent < 5000) {
-    console.log(`Condition not met: peakCurrent (${peakCurrent}) < 5000`);
+    logMessage(`Condition not met: peakCurrent (${peakCurrent}) < 5000`);
     return;
   }
 
@@ -112,9 +122,9 @@ ws.onmessage = (message) => {
     };
     lightningData.push(newStrike);
     saveData();
-    console.log('Transformed data:', newStrike);  // Log transformed data
+    logMessage('Transformed data: ' + JSON.stringify(newStrike));  // Log transformed data
   } else {
-    console.log('Condition not met: Lightning strike not within 10 km of any city.');
+    logMessage('Condition not met: Lightning strike not within 10 km of any city.');
   }
 };
 
