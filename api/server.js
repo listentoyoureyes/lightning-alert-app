@@ -31,7 +31,7 @@ const WEBSOCKET_PASSWORD = config.password;
 app.use(cors());
 
 // Serve the lightning data file to the frontend
-app.use('/.netlify/functions/server/lightning-data', express.static(path.join(__dirname, 'lightningData.json')));
+app.use('/lightning-data', express.static(path.join(__dirname, 'lightningData.json')));
 
 // Serve frontend files
 app.use(express.static(path.join(__dirname, '../public')));

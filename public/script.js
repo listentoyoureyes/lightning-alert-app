@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const lightningList = document.getElementById('lightning-list');
 
   const fetchData = () => {
-    fetch('/.netlify/functions/server/lightning-data')
+    fetch('/api/lightning-data')
       .then(response => {
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
