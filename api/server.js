@@ -14,6 +14,11 @@ const citiesPath = path.join(__dirname, 'cities.json');
 const logFilePath = path.join(__dirname, 'logs.txt');
 const lightningDataPath = path.join(__dirname, 'lightningData.json');
 
+// Log environment variables
+console.log('SMHI_SERVER_URL:', process.env.SMHI_SERVER_URL);
+console.log('WEBSOCKET_USERNAME:', process.env.WEBSOCKET_USERNAME);
+console.log('WEBSOCKET_PASSWORD:', process.env.WEBSOCKET_PASSWORD);
+
 // Load cities data
 let cities;
 try {
@@ -77,7 +82,7 @@ app.get('/', (req, res) => {
 // Create the WebSocket connection with basic authentication to the SMHI server
 const ws = new WebSocket(WEBSOCKET_URL, {
   headers: {
-    'Authorization': 'Basic ' + Buffer.from(WEBSOCKET_USERNAME + ':' + WEBSOCKET_PASSWORD).toString('base64')
+    'Authorization': 'Basic ' + Buffer.from(`${WEBSOCKET_USERNAME}:${WEBSOCKET_PASSWORD}`).toString('base64')
   }
 });
 
