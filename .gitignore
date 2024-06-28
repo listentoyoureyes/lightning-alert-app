@@ -1,0 +1,33 @@
+# Node.js dependencies
+node_modules/
+
+# Environment variables
+.env
+config.json
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# IDE-specific files
+.vscode/
+.idea/
+
+# Netlify-specific files
+.netlify/
+dist/
+build/
+
+# Temporary files
+tmp/
+temp/
+
+# Frontend build artifacts
+/public/build/
