@@ -1,27 +1,34 @@
 const express = require('express');
-const serverless = require('serverless-http');
 const WebSocket = require('ws');
 const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
+const dotenv = require('dotenv');
+
+dotenv.config();
 
 const app = express();
 
 let lightningData = [];
 const cities = require('./cities.json');
 const logFilePath = path.join(__dirname, 'logs.txt');
+const lightningDataPath = path.join(__dirname, 'lightningData.json');
 
+// Load existing lightning data
+try {
+  if (fs.existsSync(lightningDataPath)) {
+    lightningData = JSON.parse(fs.readFileSync(lightningDataPath));
+  }
+} catch (err) {
+  console.error('Failed to load lightningData.json:', err);
+}
+
+// Function to log messages to a file
 const logMessage = (message) => {
   const logEntry = `${new Date().toISOString()} - ${message}\n`;
   fs.appendFileSync(logFilePath, logEntry);
   console.log(message);
 };
-
-try {
-  lightningData = JSON.parse(fs.readFileSync(path.join(__dirname, 'lightningData.json')));
-} catch (err) {
-  logMessage('Failed to load lightningData.json: ' + err);
-}
 
 const config = {
   smhiServerUrl: process.env.SMHI_SERVER_URL,
@@ -37,11 +44,20 @@ const WEBSOCKET_PASSWORD = config.password;
 // Use CORS middleware
 app.use(cors());
 
-// Serve the lightning data file to the frontend
-app.use('/api/lightning-data', express.static(path.join(__dirname, 'lightningData.json')));
+// Serve the lightning data to the frontend
+app.get('/api/lightning-data', (req, res) => {
+  res.json(lightningData);
+});
 
-// Serve the log file to the frontend
-app.use('/api/logs', express.static(logFilePath));
+// Serve the logs to the frontend
+app.get('/api/logs', (req, res) => {
+  fs.readFile(logFilePath, 'utf8', (err, data) => {
+    if (err) {
+      return res.status(500).send('Failed to read log file');
+    }
+    res.send(data);
+  });
+});
 
 // Serve frontend files
 app.use(express.static(path.join(__dirname, '../public')));
@@ -59,7 +75,7 @@ const ws = new WebSocket(WEBSOCKET_URL, {
 
 // Save data to file
 const saveData = () => {
-  fs.writeFileSync(path.join(__dirname, 'lightningData.json'), JSON.stringify(lightningData, null, 2));
+  fs.writeFileSync(lightningDataPath, JSON.stringify(lightningData, null, 2));
 };
 
 // Haversine formula to calculate distance between two lat/lon points
@@ -128,4 +144,6 @@ ws.onmessage = (message) => {
   }
 };
 
-module.exports.handler = serverless(app);
+app.listen(3000, () => {
+  console.log('Server is running on port 3000');
+});
