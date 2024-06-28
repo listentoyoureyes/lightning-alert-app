@@ -1,18 +1,18 @@
 {
-    "name": "lightning-alert-app",
-    "version": "1.0.0",
-    "description": "Lightning alert application",
-    "scripts": {
-      "start": "node api/server.js",
-      "build": "echo 'No build step required for frontend'"
-    },
-    "dependencies": {
-      "express": "^4.17.1",
-      "ws": "^7.4.5",
-      "cors": "^2.8.5"
-    },
-    "engines": {
-      "node": "14.x"
-    }
+  "name": "lightning-alert-app",
+  "version": "1.0.0",
+  "description": "Lightning alert application",
+  "scripts": {
+    "start": "node api/server.js",
+    "build": "echo 'No build step required for frontend'"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "ws": "^7.4.5",
+    "cors": "^2.8.5",
+    "serverless-http": "^2.7.0"
+  },
+  "engines": {
+    "node": "14.x"
   }
-  
+}
