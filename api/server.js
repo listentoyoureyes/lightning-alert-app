@@ -86,6 +86,12 @@ const ws = new WebSocket(WEBSOCKET_URL, {
   }
 });
 
+// Add error handling for WebSocket
+ws.on('error', (error) => {
+  console.error('WebSocket error:', error);
+  logMessage('WebSocket error: ' + error.message);
+});
+
 // Save data to file
 const saveData = () => {
   fs.writeFileSync(lightningDataPath, JSON.stringify(lightningData, null, 2));
