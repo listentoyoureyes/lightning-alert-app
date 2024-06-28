@@ -17,15 +17,13 @@ try {
 }
 
 const config = {
-  useMockServer: process.env.USE_MOCK_SERVER === 'true',
-  mockServerUrl: process.env.MOCK_SERVER_URL,
   smhiServerUrl: process.env.SMHI_SERVER_URL,
   username: process.env.WEBSOCKET_USERNAME,
   password: process.env.WEBSOCKET_PASSWORD
 };
 
-// Determine which WebSocket URL to use based on configuration
-const WEBSOCKET_URL = config.useMockServer ? config.mockServerUrl : config.smhiServerUrl;
+// Determine the WebSocket URL to use based on configuration
+const WEBSOCKET_URL = config.smhiServerUrl;
 const WEBSOCKET_USERNAME = config.username;
 const WEBSOCKET_PASSWORD = config.password;
 
@@ -42,7 +40,7 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
-// Create the WebSocket connection with basic authentication to the mock server or SMHI server
+// Create the WebSocket connection with basic authentication to the SMHI server
 const ws = new WebSocket(WEBSOCKET_URL, {
   headers: {
     'Authorization': 'Basic ' + Buffer.from(WEBSOCKET_USERNAME + ':' + WEBSOCKET_PASSWORD).toString('base64')
@@ -73,7 +71,7 @@ const handleHeartbeat = (message) => {
   console.log('Heartbeat message received:', message);
 };
 
-// Handle WebSocket messages from the mock server or SMHI server
+// Handle WebSocket messages from the SMHI server
 ws.onmessage = (message) => {
   const strike = JSON.parse(message.data);
   console.log('Received data:', strike);  // Log received data
@@ -87,8 +85,8 @@ ws.onmessage = (message) => {
   const peakCurrent = strike.meta.peakCurrent;
 
   // Check if the lightning strike meets the threshold
-  if (peakCurrent < 10) {
-    console.log(`Condition not met: peakCurrent (${peakCurrent}) < 10`);
+  if (peakCurrent < 5000) {
+    console.log(`Condition not met: peakCurrent (${peakCurrent}) < 5000`);
     return;
   }
 
