@@ -10,9 +10,17 @@ dotenv.config();
 const app = express();
 
 let lightningData = [];
-const cities = require('./cities.json');
+const citiesPath = path.join(__dirname, 'cities.json');
 const logFilePath = path.join(__dirname, 'logs.txt');
 const lightningDataPath = path.join(__dirname, 'lightningData.json');
+
+// Load cities data
+let cities;
+try {
+  cities = JSON.parse(fs.readFileSync(citiesPath));
+} catch (err) {
+  console.error('Failed to load cities.json:', err);
+}
 
 // Load existing lightning data
 try {
@@ -122,7 +130,7 @@ ws.onmessage = (message) => {
     const distance = haversine(lat, lon, city.lat, city.lon);
     if (distance <= 10) {
       // Check if this city has already been notified today
-      const alreadyNotified = lightningData.some(data => data.city === city.name && new Date(data.timestamp).toDateString() === new Date().toDateString());
+      const alreadyNotified = lightningData.some(data => data.cities.includes(city.name) && new Date(data.timestamp).toDateString() === new Date().toDateString());
       if (!alreadyNotified) {
         affectedCities.push(city.name);
       }

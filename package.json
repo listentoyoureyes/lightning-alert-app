@@ -2,20 +2,14 @@
   "name": "lightning-alert-app",
   "version": "1.0.0",
   "description": "Lightning alert application",
+  "main": "api/server.js",
   "scripts": {
-    "start": "node api/server.js",
-    "build": "echo 'No build step required for frontend'"
+    "start": "node api/server.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
     "express": "^4.17.1",
-    "serverless-http": "^2.7.0",
     "ws": "^7.4.5"
-  },
-  "engines": {
-    "node": "14.x"
-  },
-  "devDependencies": {
-    "netlify-cli": "^17.30.0"
   }
 }
